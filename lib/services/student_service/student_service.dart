@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:pb_lms/models/user_model.dart';
 
 class StudentService {
   final baseUrl = 'https://api.portfoliobuilders.in/api';
@@ -39,6 +40,30 @@ class StudentService {
       };
     } else {
       return {'status': false, 'message': 'Failed to fetch profile', 'data': null};
+    }
+  }
+
+  Future<Map<String, dynamic>> fetchCourse(int token) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/getStudentCourses'),
+        headers: {'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',},
+      );
+      final responseData = jsonDecode(response.body);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print(responseData);
+        List<dynamic> body = responseData['courses'];
+        List<CourseModel> courses =
+            body.map((dynamic item) => CourseModel.fromJson(item)).toList();
+        return {'courses': courses, 'status': true};
+      }else{
+        return{
+          'status': false,
+        };
+      }
+    } catch (e) {
+      throw Exception('failed to load User Course $e');
     }
   }
 

@@ -38,3 +38,29 @@ class UserModel {
     };
   }
 }
+
+class CourseModel {
+  int? courseId;
+  String? courseName;
+  String? courseDescription;
+  int? batchId;
+  String? batchName;
+  String? status;
+
+  CourseModel({
+    this.courseId,
+    this.courseName,
+    this.courseDescription,
+    this.batchId,
+    this.batchName,
+    this.status,
+  });
+  CourseModel.fromJson(Map<String, dynamic> json) {
+    courseId = json['courseId'];
+    courseName = json['courseName'];
+    courseDescription = json['courseDescription'];
+    batchId = json['batchId'];
+    batchName = json['batchName'];
+    status = json['status'];
+  }
+}

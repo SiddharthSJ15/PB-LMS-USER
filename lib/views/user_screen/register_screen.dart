@@ -3,24 +3,25 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:pb_lms/providers/student_provider/student_provider.dart';
-import 'package:pb_lms/views/user_screen/forgot_password_screen.dart';
-import 'package:pb_lms/views/user_screen/register_screen.dart';
+import 'package:pb_lms/views/login_screen.dart';
 import 'package:pb_lms/views/user_screen/classes_screen/classes_screen.dart';
 import 'package:pb_lms/views/user_screen/main_screen/main_screen.dart';
 import 'package:provider/provider.dart'; // Add this dependency for Lottie animations
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
   bool _passwordVisibility = false;
   bool _isLoading = false; // Add loading state
   TextEditingController _emailController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
+  TextEditingController _nameController = TextEditingController();
+  TextEditingController _phoneController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
 
@@ -165,24 +166,15 @@ class _LoginScreenState extends State<LoginScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            'Welcome to',
+                            'Create your account!',
                             style: GoogleFonts.poppins(
-                              fontSize: 28,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black87,
+                              fontSize: 32,
+                              fontWeight: FontWeight.w600,
+                              color: Color.fromRGBO(0, 0, 0, 1),
                               height: 1.2,
                             ),
                           ),
-                          SizedBox(height: 8),
-                          Text(
-                            'PortfolioBuilders!',
-                            style: GoogleFonts.poppins(
-                              fontSize: 36,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.black87,
-                              height: 1.2,
-                            ),
-                          ),
+
                           SizedBox(height: 8),
                           Text(
                             'Please enter your details.',
@@ -193,13 +185,60 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           SizedBox(height: 40),
+                          Text(
+                            'Full Name',
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey[700],
+                            ),
+                          ),
+                          SizedBox(height: 6),
+                          TextFormField(
+                            controller: _nameController,
+                            enabled: !_isLoading, // Disable when loading
+                            decoration: InputDecoration(
+                              hintText: 'Enter your name',
+                              hintStyle: GoogleFonts.poppins(
+                                color: Colors.grey[400],
+                              ),
+                              prefixIcon: Icon(
+                                Icons.email_outlined,
+                                color: Colors.grey[500],
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: Colors.grey[300]!,
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: Colors.grey[300]!,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: Colors.black54,
+                                  width: 2,
+                                ),
+                              ),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 16,
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 20),
 
                           Text(
                             'Email Address',
                             style: GoogleFonts.poppins(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
-                              color: Colors.black,
+                              color: Colors.grey[700],
                             ),
                           ),
                           SizedBox(height: 6),
@@ -213,7 +252,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 color: Colors.grey[400],
                               ),
                               prefixIcon: Icon(
-                                CupertinoIcons.mail,
+                                Icons.email_outlined,
                                 color: Colors.grey[500],
                               ),
                               border: OutlineInputBorder(
@@ -248,7 +287,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: GoogleFonts.poppins(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
-                              color: Colors.black,
+                              color: Colors.grey[700],
                             ),
                           ),
                           SizedBox(height: 6),
@@ -263,7 +302,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 color: Colors.grey[400],
                               ),
                               prefixIcon: Icon(
-                                CupertinoIcons.lock,
+                                Icons.lock_outline,
                                 color: Colors.grey[500],
                               ),
                               suffixIcon: IconButton(
@@ -277,8 +316,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                       },
                                 icon: Icon(
                                   _passwordVisibility
-                                      ? CupertinoIcons.eye_solid
-                                      : CupertinoIcons.eye_slash_fill,
+                                      ? Icons.visibility_outlined
+                                      : Icons.visibility_off_outlined,
                                   color: Colors.grey[500],
                                 ),
                               ),
@@ -307,41 +346,56 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                           ),
-                          SizedBox(height: 18),
-                          InkWell(
-                            borderRadius: BorderRadius.circular(8),
-                            focusColor: Colors.transparent,
-                            onTap: () => Navigator.pushReplacement(
-                              context,
-                              PageRouteBuilder(
-                                pageBuilder:
-                                    (context, animation, secondaryAnimation) =>
-                                        ForgotPasswordScreen(),
-                                transitionsBuilder:
-                                    (
-                                      context,
-                                      animation,
-                                      secondaryAnimation,
-                                      child,
-                                    ) {
-                                      return FadeTransition(
-                                        opacity: animation,
-                                        child: child,
-                                      );
-                                    },
-                              ),
+                          SizedBox(height: 20),
+
+                          Text(
+                            'Phone Number',
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey[700],
                             ),
-                            child: Text(
-                              'Forgot Password?',
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                color: Color.fromRGBO(48, 48, 48, 1),
-                                fontWeight: FontWeight.w500,
+                          ),
+                          SizedBox(height: 6),
+                          TextFormField(
+                            controller: _phoneController,
+                            enabled: !_isLoading, // Disable when loading
+                            decoration: InputDecoration(
+                              hintText: 'Enter your Phone number',
+                              hintStyle: GoogleFonts.poppins(
+                                color: Colors.grey[400],
+                              ),
+                              prefixIcon: Icon(
+                                Icons.email_outlined,
+                                color: Colors.grey[500],
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: Colors.grey[300]!,
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: Colors.grey[300]!,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: Colors.black54,
+                                  width: 2,
+                                ),
+                              ),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 16,
                               ),
                             ),
                           ),
+                          SizedBox(height: 40),
 
-                          SizedBox(height: 18),
                           SizedBox(
                             width: double.infinity,
                             height: 50,
@@ -376,7 +430,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         ),
                                         SizedBox(width: 12),
                                         Text(
-                                          'Logging in...',
+                                          'Creating...',
                                           style: GoogleFonts.poppins(
                                             fontSize: 16,
                                             fontWeight: FontWeight.w500,
@@ -386,7 +440,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ],
                                     )
                                   : Text(
-                                      'Login',
+                                      'Create',
                                       style: GoogleFonts.poppins(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w500,
@@ -396,53 +450,43 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Text(
-                                "Don't have an account? ",
+
+                          Align(
+                            alignment: Alignment.center,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(8),
+                              focusColor: Colors.transparent,
+                              onTap: () => Navigator.pushReplacement(
+                                context,
+                                PageRouteBuilder(
+                                  pageBuilder:
+                                      (context, animation, secondaryAnimation) =>
+                                          LoginScreen(),
+                                  transitionsBuilder:
+                                      (
+                                        context,
+                                        animation,
+                                        secondaryAnimation,
+                                        child,
+                                      ) {
+                                        return FadeTransition(
+                                          opacity: animation,
+                                          child: child,
+                                        );
+                                      },
+                                ),
+                              ),
+                              child: Text(
+                                'Back to Login',
                                 style: GoogleFonts.poppins(
                                   fontSize: 14,
+                                  fontWeight: FontWeight.w600,
                                   color: Color.fromRGBO(48, 48, 48, 1),
-                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
-                              InkWell(
-                                borderRadius: BorderRadius.circular(8),
-                                focusColor: Colors.transparent,
-                                onTap: () => Navigator.pushReplacement(
-                                  context,
-                                  PageRouteBuilder(
-                                    pageBuilder:
-                                        (
-                                          context,
-                                          animation,
-                                          secondaryAnimation,
-                                        ) => RegisterScreen(),
-                                    transitionsBuilder:
-                                        (
-                                          context,
-                                          animation,
-                                          secondaryAnimation,
-                                          child,
-                                        ) {
-                                          return FadeTransition(
-                                            opacity: animation,
-                                            child: child,
-                                          );
-                                        },
-                                  ),
-                                ),
-                                child: Text(
-                                  'Sign Up.',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color.fromRGBO(48, 48, 48, 1),
-                                  ),
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
+                          SizedBox(height: 40),
                         ],
                       ),
                     ),
@@ -484,11 +528,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Welcome to\nPortfolioBuilders !',
+                        'Create your account!',
                         style: GoogleFonts.poppins(
                           fontSize: 24,
                           fontWeight: FontWeight.w600,
-                          color: Colors.black87,
+                          color: Color.fromRGBO(0, 0, 0, 1),
                           height: 1.2,
                         ),
                       ),
@@ -502,6 +546,51 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       SizedBox(height: 32),
+
+                      Text(
+                        'Full Name',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                      SizedBox(height: 6),
+                      TextFormField(
+                        controller: _nameController,
+                        enabled: !_isLoading, // Disable when loading
+                        decoration: InputDecoration(
+                          hintText: 'Enter your name',
+                          hintStyle: GoogleFonts.poppins(
+                            color: Colors.grey[400],
+                          ),
+                          prefixIcon: Icon(
+                            Icons.email_outlined,
+                            color: Colors.grey[500],
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: Colors.grey[300]!),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: Colors.grey[300]!),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(
+                              color: Colors.black54,
+                              width: 2,
+                            ),
+                          ),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 20),
+
                       Text(
                         'Email Address',
                         style: GoogleFonts.poppins(
@@ -607,41 +696,52 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ),
-                      SizedBox(height: 18),
-                      InkWell(
-                        borderRadius: BorderRadius.circular(8),
-                        focusColor: Colors.transparent,
-                        onTap: () => Navigator.pushReplacement(
-                          context,
-                          PageRouteBuilder(
-                            pageBuilder:
-                                (context, animation, secondaryAnimation) =>
-                                    ForgotPasswordScreen(),
-                            transitionsBuilder:
-                                (
-                                  context,
-                                  animation,
-                                  secondaryAnimation,
-                                  child,
-                                ) {
-                                  return FadeTransition(
-                                    opacity: animation,
-                                    child: child,
-                                  );
-                                },
-                          ),
+                      SizedBox(height: 20),
+
+                      Text(
+                        'Phone Number',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey[700],
                         ),
-                        child: Text(
-                          'Forgot Password?',
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            color: Color.fromRGBO(48, 48, 48, 1),
-                            fontWeight: FontWeight.w500,
+                      ),
+                      SizedBox(height: 6),
+                      TextFormField(
+                        controller: _phoneController,
+                        enabled: !_isLoading, // Disable when loading
+                        decoration: InputDecoration(
+                          hintText: 'Enter your Phone number',
+                          hintStyle: GoogleFonts.poppins(
+                            color: Colors.grey[400],
+                          ),
+                          prefixIcon: Icon(
+                            Icons.email_outlined,
+                            color: Colors.grey[500],
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: Colors.grey[300]!),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: Colors.grey[300]!),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(
+                              color: Colors.black54,
+                              width: 2,
+                            ),
+                          ),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
                           ),
                         ),
                       ),
 
-                      SizedBox(height: 18),
+                      SizedBox(height: 40),
                       SizedBox(
                         width: double.infinity,
                         height: 50,
@@ -675,7 +775,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                                     SizedBox(width: 12),
                                     Text(
-                                      'Logging in...',
+                                      'Creating...',
                                       style: GoogleFonts.poppins(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w500,
@@ -685,7 +785,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ],
                                 )
                               : Text(
-                                  'Login',
+                                  'Create',
                                   style: GoogleFonts.poppins(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500,
@@ -695,49 +795,41 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Text(
-                            "Don't have an account? ",
+
+                      Align(
+                        alignment: Alignment.center,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(8),
+                          focusColor: Colors.transparent,
+                          onTap: () => Navigator.pushReplacement(
+                            context,
+                            PageRouteBuilder(
+                              pageBuilder:
+                                  (context, animation, secondaryAnimation) =>
+                                      LoginScreen(),
+                              transitionsBuilder:
+                                  (
+                                    context,
+                                    animation,
+                                    secondaryAnimation,
+                                    child,
+                                  ) {
+                                    return FadeTransition(
+                                      opacity: animation,
+                                      child: child,
+                                    );
+                                  },
+                            ),
+                          ),
+                          child: Text(
+                            'Back to Login',
                             style: GoogleFonts.poppins(
                               fontSize: 14,
+                              fontWeight: FontWeight.w600,
                               color: Color.fromRGBO(48, 48, 48, 1),
-                              fontWeight: FontWeight.w500,
                             ),
                           ),
-                          InkWell(
-                            borderRadius: BorderRadius.circular(8),
-                            focusColor: Colors.transparent,
-                            onTap: () => Navigator.pushReplacement(
-                              context,
-                              PageRouteBuilder(
-                                pageBuilder:
-                                    (context, animation, secondaryAnimation) =>
-                                        RegisterScreen(),
-                                transitionsBuilder:
-                                    (
-                                      context,
-                                      animation,
-                                      secondaryAnimation,
-                                      child,
-                                    ) {
-                                      return FadeTransition(
-                                        opacity: animation,
-                                        child: child,
-                                      );
-                                    },
-                              ),
-                            ),
-                            child: Text(
-                              'Sign Up.',
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Color.fromRGBO(48, 48, 48, 1),
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                       SizedBox(height: 40),
                     ],

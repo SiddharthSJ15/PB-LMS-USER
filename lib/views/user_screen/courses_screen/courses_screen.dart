@@ -11,7 +11,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Container(
+      body: Container(
         height: double.infinity,
         width: double.infinity,
         padding: const EdgeInsets.only(

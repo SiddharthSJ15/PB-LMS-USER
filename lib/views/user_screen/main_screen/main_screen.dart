@@ -186,6 +186,7 @@ class SideNav extends StatelessWidget {
                       padding: const EdgeInsets.fromLTRB(20, 0, 10, 10),
                       child: provider.isLoading
                           ? Shimmer.fromColors(
+                              period: const Duration(seconds: 3),
                               baseColor: Colors.grey[300]!,
                               highlightColor: Colors.grey[100]!,
                               child: Container(
