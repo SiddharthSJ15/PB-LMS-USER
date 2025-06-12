@@ -329,7 +329,7 @@ class SideNav extends StatelessWidget {
                     ),
                   ),
                   InkWell(
-                    onTap: onLogout,
+                    onTap: (){},
                     borderRadius: BorderRadius.circular(10),
                     child: Container(
                       padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
@@ -352,6 +352,7 @@ class SideNav extends StatelessWidget {
                       ),
                     ),
                   ),
+                  SizedBox(height: 20),
                 ],
               ),
             ],

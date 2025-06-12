@@ -18,4 +18,5 @@ final List<Navigation> navigationItems = [
   Navigation(index: 5, image: 'assets/side_navigation/attendance.svg', label: 'Attendance'),
   Navigation(index: 6, image: 'assets/side_navigation/to_do.svg', label: 'To Do'),
   Navigation(index: 7,image: 'assets/side_navigation/live_sessions.svg',label: 'Live Session',),
+  Navigation(index: 8,image: 'assets/side_navigation/live_sessions.svg',label: 'Internship',),
 ];
