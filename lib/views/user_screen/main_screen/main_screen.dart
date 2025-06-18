@@ -10,6 +10,7 @@ import 'package:pb_lms/views/user_screen/classes_screen/classes_screen.dart';
 import 'package:pb_lms/views/user_screen/courses_screen/courses_screen.dart';
 import 'package:pb_lms/views/user_screen/dashboard/dashboard_screen.dart';
 import 'package:pb_lms/views/user_screen/editor_screen/editor_screen.dart';
+import 'package:pb_lms/views/user_screen/internship_screen/internship_screen.dart';
 import 'package:pb_lms/views/user_screen/live_session/live_screen.dart';
 import 'package:pb_lms/views/user_screen/student_report/student_report_screen.dart';
 import 'package:pb_lms/views/user_screen/to_do/to_do_screen.dart';
@@ -53,7 +54,7 @@ class _MainScreenState extends State<MainScreen> {
     double screenHeight = MediaQuery.sizeOf(context).height;
     bool isLargeScreen = screenWidth > 600 && screenHeight > 600;
     return Scaffold(
-      appBar: screenWidth < 600 || screenHeight < 600
+      appBar: screenWidth <= 600 || screenHeight <= 600
           ? AppBar(
               actions: [
                 Padding(
@@ -67,7 +68,7 @@ class _MainScreenState extends State<MainScreen> {
               ],
             )
           : null,
-      drawer: screenWidth < 600 || screenHeight < 600
+      drawer: screenWidth <= 600 || screenHeight <= 600
           ? Drawer(
               width: 285,
               child: SideNav(
@@ -101,6 +102,8 @@ class _MainScreenState extends State<MainScreen> {
                       const AttendanceScreen(),
                       const ToDoScreen(),
                       const LiveScreen(),
+                      const InternshipScreen(),
+                      // Add more screens as needed
                     ],
                   ),
             ),
@@ -184,7 +187,7 @@ class SideNav extends StatelessWidget {
                   if (isLargeScreen)
                     Padding(
                       padding: const EdgeInsets.fromLTRB(20, 0, 10, 10),
-                      child: provider.isLoading
+                      child: provider.profileLoading
                           ? Shimmer.fromColors(
                               period: const Duration(seconds: 3),
                               baseColor: Colors.grey[300]!,
