@@ -147,6 +147,9 @@ class _LessonAssignmentScreenState extends State<LessonAssignmentScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+
+                const SizedBox(height: 20),
+
                 BreadCrumb(),
 
                 Text(
@@ -175,7 +178,7 @@ class _LessonAssignmentScreenState extends State<LessonAssignmentScreen> {
                   ),
                 ),
 
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 SizedBox(
                   width: double.infinity,
                   height: 44,
@@ -210,7 +213,7 @@ class _LessonAssignmentScreenState extends State<LessonAssignmentScreen> {
                       )
                     : buildLessonsWidget(filteredLessons),
 
-                SizedBox(height: 40),
+                const SizedBox(height: 40),
                 Text(
                   'Assignments',
                   style: GoogleFonts.poppins(
