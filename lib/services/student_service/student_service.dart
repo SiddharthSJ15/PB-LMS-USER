@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:pb_lms/models/user_model.dart';
+import 'package:pb_lms/utilities/token_manager.dart';
 
 class StudentService {
   final baseUrl = 'https://api.portfoliobuilders.in/api';
-  
+
   Future<Map<String, dynamic>> loginStudentService(
     String email,
     String password,
@@ -28,10 +29,19 @@ class StudentService {
     }
   }
 
-  Future<Map<String, dynamic>> getStudentProfileService(int studentId, String token) async {
+  Future<Map<String, dynamic>> getStudentProfileService(
+    int studentId,
+    String token,
+  ) async {
     final url = Uri.parse('$baseUrl/getProfile/$studentId');
-    final response = await http.get(url,headers: {'Content-Type': 'application/json','Authorization':'Bearer $token'});
-    if (response.statusCode == 200|| response.statusCode == 201) {
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+    if (response.statusCode == 200 || response.statusCode == 201) {
       final responseData = jsonDecode(response.body);
       return {
         'status': true,
@@ -39,32 +49,165 @@ class StudentService {
         'data': responseData,
       };
     } else {
-      return {'status': false, 'message': 'Failed to fetch profile', 'data': null};
+      return {
+        'status': false,
+        'message': 'Failed to fetch profile',
+        'data': null,
+      };
     }
   }
 
-  Future<Map<String, dynamic>> fetchCourse(int token) async {
+  Future<Map<String, dynamic>> fetchCourse(String token) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/getStudentCourses'),
-        headers: {'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',},
+        Uri.parse('$baseUrl/student/getStudentCourses'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
       );
       final responseData = jsonDecode(response.body);
+      print(responseData);
       if (response.statusCode == 200 || response.statusCode == 201) {
         print(responseData);
         List<dynamic> body = responseData['courses'];
-        List<CourseModel> courses =
-            body.map((dynamic item) => CourseModel.fromJson(item)).toList();
+        List<CourseModel> courses = body
+            .map((dynamic item) => CourseModel.fromJson(item))
+            .toList();
         return {'courses': courses, 'status': true};
-      }else{
-        return{
-          'status': false,
-        };
+      } else {
+        return {'status': false};
       }
     } catch (e) {
       throw Exception('failed to load User Course $e');
     }
   }
+
+  Future<Map<String, dynamic>> fetchCourseModule(
+    int? courseId,
+    String? token,
+  ) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/student/getModule/$courseId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      final responseData = jsonDecode(response.body);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        List<dynamic> body = responseData['modules'];
+        List<ModuleModel> modules = body
+            .map((dynamic item) => ModuleModel.fromJson(item))
+            .toList();
+        return {'data': modules, 'status': true};
+      } else {
+        return {'status': false, 'message': 'Failed to fetch modules'};
+      }
+    } catch (e) {
+      throw Exception('failed to load Course Modules $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> getLessonService(
+    int? courseId,
+    int? moduleId,
+    String? token,
+  ) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/student/getLesson/$courseId/$moduleId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      final responseData = jsonDecode(response.body);
+      print(responseData);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        List<dynamic> body = responseData['lessons'];
+        List<LessonModel> lessons = body
+            .map((dynamic item) => LessonModel.fromJson(item))
+            .toList();
+        return {
+          'lessons': lessons,
+          'message': responseData['message'],
+          'status': true,
+        };
+      } else {
+        return {'message': responseData['message'], 'status': false};
+      }
+    } catch (e) {
+      throw Exception('Error fetching lessons: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> getAssignmentService(
+    int? courseId,
+    int? moduleId,
+  ) async {
+    final token = await TokenManager.getToken();
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/student/viewAssignments/$courseId/$moduleId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      final responseData = jsonDecode(response.body);
+      print(responseData);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        List<dynamic> body = responseData['assignments'];
+        List<AssignmentModel> assignments = body
+            .map((dynamic item) => AssignmentModel.fromJson(item))
+            .toList();
+        return {
+          'assignments': assignments,
+          'message': responseData['message'],
+          'status': true,
+        };
+      } else {
+        return {'message': responseData['message'], 'status': false};
+      }
+    } catch (e) {
+      throw Exception('Error fetching assignments: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> getAttendanceService(
+    int? courseId,
+    int? moduleId,
+  ) async {
+    final token = await TokenManager.getToken();
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/student/viewAssignments/$courseId/$moduleId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      final responseData = jsonDecode(response.body);
+      print(responseData);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        List<dynamic> body = responseData['assignments'];
+        List<AssignmentModel> assignments = body
+            .map((dynamic item) => AssignmentModel.fromJson(item))
+            .toList();
+        return {
+          'assignments': assignments,
+          'message': responseData['message'],
+          'status': true,
+        };
+      } else {
+        return {'message': responseData['message'], 'status': false};
+      }
+    } catch (e) {
+      throw Exception('Error fetching assignments: $e');
+    }
+  }
+
 
 }

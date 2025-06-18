@@ -6,66 +6,63 @@ import 'package:pb_lms/constants/constants.dart';
 import 'package:pb_lms/models/user_model.dart';
 import 'package:pb_lms/providers/navigation_provider/navigation_provider.dart';
 import 'package:pb_lms/providers/student_provider/student_provider.dart';
-import 'package:pb_lms/views/user_screen/modules_screen/modules_screen.dart';
+import 'package:pb_lms/views/user_screen/bread_crumb/bread_crumb_course.dart';
+import 'package:pb_lms/views/user_screen/lessons_assignments_screen/lesson_assignment_screen.dart';
 import 'package:pb_lms/widgets/notched_container.dart';
 import 'package:provider/provider.dart';
 
-class CoursesScreen extends StatefulWidget {
-  const CoursesScreen({super.key});
+class ModulesScreen extends StatefulWidget {
+  final int courseId;
+  const ModulesScreen({required this.courseId, super.key});
 
   @override
-  State<CoursesScreen> createState() => _CoursesScreenState();
+  State<ModulesScreen> createState() => _ModulesScreenState();
 }
 
-class _CoursesScreenState extends State<CoursesScreen> {
+class _ModulesScreenState extends State<ModulesScreen> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     Future.microtask(() {
       final provider = Provider.of<StudentProvider>(context, listen: false);
-      provider.getStudentCoursesProvider().then((_) {
+      provider.fetchCourseModule(widget.courseId).then((_) {
         setState(() {
-          filteredCourses = provider.courses;
+          filteredModules = provider.modules;
         });
       });
     });
     searchController.addListener(() {
-      filterCourses(searchController.text);
+      filterModules(searchController.text);
     });
   }
 
   TextEditingController searchController = TextEditingController();
-  List<CourseModel> filteredCourses = [];
+  TextEditingController _titleController = TextEditingController();
+  TextEditingController _descController = TextEditingController();
+  int? editId;
 
-  void filterCourses(String query) {
+  List<ModuleModel> filteredModules = [];
+
+  void filterModules(String query) {
     final provider = Provider.of<StudentProvider>(context, listen: false);
-    final allCourses = provider.courses;
+    final allModules = provider.modules;
     setState(() {
-      filteredCourses = allCourses.where((course) {
-        final title = course.courseName?.toLowerCase() ?? '';
+      filteredModules = allModules.where((module) {
+        final title = module.title?.toLowerCase() ?? '';
         return title.contains(query.toLowerCase());
       }).toList();
     });
   }
 
   @override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
-    searchController.dispose();
-    filteredCourses.clear();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final provider = Provider.of<StudentProvider>(context);
-    final navProvider = Provider.of<NavigationProvider>(context);
+    final navProvider = Provider.of<NavigationProvider>(context, listen: false);
+    final modules = provider.modules;
     final screenWidth = MediaQuery.sizeOf(context).width;
-    final screenHeight = MediaQuery.sizeOf(context).height;
 
-    if (navProvider.isViewingModules) {
-      return ModulesScreen(courseId: navProvider.selectedCourseId!,);
+    if (navProvider.isViewingLessons) {
+      return LessonAssignmentScreen();
     }
 
     return Scaffold(
@@ -74,9 +71,9 @@ class _CoursesScreenState extends State<CoursesScreen> {
         width: double.infinity,
         padding: const EdgeInsets.only(
           left: 20,
-          top: 55,
+          top: 12,
           right: 20,
-          bottom: 20,
+          bottom: 12,
         ),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
@@ -85,9 +82,12 @@ class _CoursesScreenState extends State<CoursesScreen> {
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
+              // Breadcrumb Navigation
+              BreadCrumb(),
               Text(
-                'Courses',
+                'Modules',
                 style: GoogleFonts.poppins(
                   fontSize: TextStyles.headingLarge(context),
                   fontWeight: FontWeight.w600,
@@ -95,16 +95,16 @@ class _CoursesScreenState extends State<CoursesScreen> {
                 ),
               ),
               Text(
-                'Find your courses here.',
+                'Find your modules here.',
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w300,
                   color: Colors.black,
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               Text(
-                'Courses',
+                'Modules',
                 style: GoogleFonts.poppins(
                   fontSize: 24,
                   fontWeight: FontWeight.w600,
@@ -112,57 +112,36 @@ class _CoursesScreenState extends State<CoursesScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-
               SizedBox(
                 width: double.infinity,
                 height: 44,
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: searchController,
-                        decoration: InputDecoration(
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide.none,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none,
-                          ),
-                          hoverColor: Colors.white,
-                          filled: true,
-                          fillColor: Colors.white,
-                          prefixIcon: const Icon(
-                            CupertinoIcons.search,
-                            size: 24,
-                          ),
-                          suffixIcon: searchController.text.isNotEmpty
-                              ? IconButton(
-                                  icon: Icon(Icons.clear),
-                                  onPressed: () {
-                                    searchController.clear();
-                                    filterCourses('');
-                                  },
-                                )
-                              : null,
-
-                          hintText: 'Search',
-                          contentPadding: EdgeInsets.only(top: 10, bottom: 10),
-                        ),
-                      ),
+                child: TextFormField(
+                  controller: searchController,
+                  decoration: InputDecoration(
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide.none,
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                  ],
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide.none,
+                    ),
+                    hoverColor: Colors.white,
+                    filled: true,
+                    fillColor: Colors.white,
+                    prefixIcon: const Icon(CupertinoIcons.search, size: 24),
+                    hintText: 'Search',
+                    contentPadding: EdgeInsets.only(top: 10, bottom: 10),
+                  ),
                 ),
               ),
+
               const SizedBox(height: 20),
               Align(
                 alignment: provider.isLoading
                     ? Alignment.center
-                    : filteredCourses.length < 4
-                    ? screenWidth < 893
-                          ? Alignment.topCenter
-                          : Alignment.topLeft
+                    : filteredModules.length < 4
+                    ? Alignment.topLeft
                     : Alignment.topCenter,
                 child: provider.isLoading
                     ? Center(
@@ -170,10 +149,10 @@ class _CoursesScreenState extends State<CoursesScreen> {
                           color: Color.fromARGB(255, 12, 201, 70),
                         ),
                       )
-                    : filteredCourses.isEmpty
+                    : filteredModules.isEmpty
                     ? Center(
                         child: Text(
-                          'No courses available',
+                          'No modules available',
                           style: GoogleFonts.poppins(
                             fontSize: TextStyles.headingSmall(context),
                           ),
@@ -186,22 +165,16 @@ class _CoursesScreenState extends State<CoursesScreen> {
                         alignment: WrapAlignment.start,
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
-                          ...filteredCourses.map((course) {
-                            final title = course.courseName ?? 'Untitled';
+                          ...filteredModules.map((item) {
+                            final title = item.title ?? 'Untitled';
                             final iconPath =
                                 title.trim().toLowerCase().startsWith('ui ux')
                                 ? 'assets/courses/uiux.svg'
                                 : 'assets/courses/course.svg';
 
-                            return // Replace your NotchedContainer GestureDetector section with this:
-                            GestureDetector(
-                              onTap: () {
-                                // Navigate to modules using the provider
-                                print('Navigating to modules for course: ${course.courseId}');
-                                navProvider.navigateToModules(
-                                  course.courseId!,
-                                );
-                              },
+                            return GestureDetector(
+                              onTap: () =>
+                                  navProvider.navigateToLessons(item.moduleId!),
                               child: NotchedContainer(
                                 width: 254,
                                 height: 254,
@@ -214,11 +187,10 @@ class _CoursesScreenState extends State<CoursesScreen> {
                                   10,
                                 ),
                                 topRightIcon: Text(
-                                  course.courseId?.toString() ?? '',
+                                  (modules.indexOf(item) + 1).toString(),
                                 ),
                                 child: Stack(
                                   children: [
-                                    // Main content
                                     Column(
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,

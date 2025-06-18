@@ -64,3 +64,83 @@ class CourseModel {
     status = json['status'];
   }
 }
+
+class ModuleModel {
+  int? moduleId;
+  String? title;
+  String? content;
+
+  ModuleModel({this.moduleId, this.title, this.content});
+  ModuleModel.fromJson(Map<String, dynamic> json) {
+    moduleId = json['moduleId'];
+    title = json['title'];
+    content = json['content'];
+  }
+}
+
+
+class LessonModel {
+  int? lessonId;
+  String? title;
+  String? content;
+  String? videoLink;
+  String? pdfPath;
+  String? status;
+  int? courseId;
+  int? moduleId;
+  LessonModel({
+    this.lessonId,
+    this.title,
+    this.content,
+    this.videoLink,
+    this.pdfPath,
+    this.status,
+    this.courseId,
+    this.moduleId,
+  });
+  LessonModel.fromJson(Map<String, dynamic> json) {
+    lessonId = json['lessonId'];
+    title = json['title'];
+    content = json['content'];
+    videoLink = json['videoLink'];
+    pdfPath = json['pdfPath'];
+    status = json['status'];
+    courseId = json['courseId'];
+    moduleId = json['moduleId'];
+  }
+}
+
+class AssignmentModel {
+  final int? assignmentId;
+  final int? courseId;
+  final int? moduleId;
+  final String? title;
+  final String? description;
+  final DateTime? dueDate;
+  final String? submissionLink;
+  final String? status;
+
+  AssignmentModel({
+    this.assignmentId,
+    this.courseId,
+    this.moduleId,
+    required this.title,
+    required this.description,
+    this.dueDate,
+    this.submissionLink,
+    required this.status,
+  });
+
+  factory AssignmentModel.fromJson(Map<String, dynamic> json) {
+    return AssignmentModel(
+      assignmentId: json['assignmentId'],
+      courseId: json['courseId'],
+      moduleId: json['moduleId'],
+      title: json['title'] ?? '',
+      description: json['description'] ?? '',
+      dueDate: json['dueDate'] != null ? DateTime.parse(json['dueDate']) : null,
+      submissionLink: json['submissionLink'],
+      status: json['status'] ?? 'pending',
+    );
+  }
+}
