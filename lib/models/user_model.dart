@@ -78,7 +78,6 @@ class ModuleModel {
   }
 }
 
-
 class LessonModel {
   int? lessonId;
   String? title;
@@ -142,5 +141,46 @@ class AssignmentModel {
       submissionLink: json['submissionLink'],
       status: json['status'] ?? 'pending',
     );
+  }
+}
+
+class AttendanceModel {
+  int? attendanceId;
+  int? studentId;
+  int? batchId;
+  String? date;
+  String? status;
+  String? createdDate;
+  String? updatedAt;
+  AttendanceBatchModel? batch;
+
+  AttendanceModel({
+    this.attendanceId,
+    this.studentId,
+    this.batchId,
+    this.date,
+    this.status,
+    this.createdDate,
+    this.updatedAt,
+    this.batch,
+  });
+
+  AttendanceModel.fromJson(Map<String, dynamic> json) {
+    attendanceId = json['id'];
+    studentId = json['studentId'];
+    batchId = json['batchId'];
+    date = json['date'];
+    status = json['status'];
+    createdDate = json['createdAt'];
+    updatedAt = json['updatedAt'];
+    batch = AttendanceBatchModel.fromJson(json['Batch']);
+  }
+}
+
+class AttendanceBatchModel {
+  String? batchName;
+  AttendanceBatchModel({this.batchName});
+  AttendanceBatchModel.fromJson(Map<String, dynamic> json) {
+    batchName = json['batchName'];
   }
 }

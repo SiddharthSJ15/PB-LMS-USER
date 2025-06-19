@@ -146,8 +146,8 @@ class StudentService {
   Future<Map<String, dynamic>> getAssignmentService(
     int? courseId,
     int? moduleId,
+    String? token,
   ) async {
-    final token = await TokenManager.getToken();
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/student/viewAssignments/$courseId/$moduleId'),
@@ -177,13 +177,12 @@ class StudentService {
   }
 
   Future<Map<String, dynamic>> getAttendanceService(
-    int? courseId,
-    int? moduleId,
+    int? studentId,
+    String? token,
   ) async {
-    final token = await TokenManager.getToken();
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/student/viewAssignments/$courseId/$moduleId'),
+        Uri.parse('$baseUrl/student/getAttendanceHistory/$studentId'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -192,20 +191,19 @@ class StudentService {
       final responseData = jsonDecode(response.body);
       print(responseData);
       if (response.statusCode == 200 || response.statusCode == 201) {
-        List<dynamic> body = responseData['assignments'];
-        List<AssignmentModel> assignments = body
-            .map((dynamic item) => AssignmentModel.fromJson(item))
+        List<dynamic> body = responseData['attendance'];
+        List<AttendanceModel> attendance = body
+            .map((dynamic item) => AttendanceModel.fromJson(item))
             .toList();
         return {
-          'assignments': assignments,
-          'message': responseData['message'],
+          'attendance': attendance,
           'status': true,
         };
       } else {
-        return {'message': responseData['message'], 'status': false};
+        return {'status': false};
       }
     } catch (e) {
-      throw Exception('Error fetching assignments: $e');
+      throw Exception('Error fetching attendance: $e');
     }
   }
 

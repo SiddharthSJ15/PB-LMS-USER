@@ -27,6 +27,10 @@ class StudentProvider with ChangeNotifier {
   List<AssignmentModel> _assignments = [];
   List<AssignmentModel> get assignments => _assignments;
 
+  
+  List<AttendanceModel> _attendance = [];
+  List<AttendanceModel> get attendance => _attendance;
+
   Future<bool> loginStudentProvider(String email, String password) async {
     _isLoading = true;
     _profileLoading = true;
@@ -177,17 +181,16 @@ class StudentProvider with ChangeNotifier {
     }
   }
 
-  Future<void> getAssignments(
-    int? moduleId,
-    int? courseId,
-  ) async {
+  Future<void> getAssignments(int? moduleId, int? courseId) async {
     _assignments = [];
     _isLoading = true;
     notifyListeners();
     try {
+      final token = await TokenManager.getToken();
       final response = await _studentService.getAssignmentService(
         courseId,
         moduleId,
+        token,
       );
       if (response['status']) {
         _assignments = response['assignments'];
@@ -202,19 +205,25 @@ class StudentProvider with ChangeNotifier {
     }
   }
 
-  // Future<void> getAttendance(){
-  //   _isLoading = true;
-  //   notifyListeners();
-  //   try {
-  //     final token = TokenManager.getToken();
-  //     final response = _studentService.getAttendanceService(token);
-  //   } catch (e) {
-  //     throw Exception('Error in Attendance: $e');
-  //   } finally {
-  //     _isLoading = false;
-  //     notifyListeners();
-      
-  //   }
-  // }
-
+  Future<void> getAttendance(
+    // int? studentId
+    ) async{
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final token = await TokenManager.getToken();
+      final studentId = await UserManager.getUser();
+      final response = await _studentService.getAttendanceService(studentId, token);
+      if (response['status']) {
+        _attendance = response['attendance'];
+      } else {
+        _attendance = [];
+      }
+    } catch (e) {
+      throw Exception('Error in Attendance: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 }
