@@ -82,52 +82,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               color: Colors.black,
             ),
           ),
-                    const SizedBox(height: 16),
-
-          Container(
-            height: 400,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            padding: const EdgeInsets.all(8),
-            child: Consumer<StudentProvider>(
-              builder: (context, provider, child) {
-                if (provider.attendance.isEmpty) {
-                  return Center(
-                    child: Text(
-                      'No attendance data available',
-                      style: GoogleFonts.poppins(
-                        fontSize: TextStyles.regularText(context),
-                        fontWeight: FontWeight.w400,
-                        color: Colors.black54,
-                      ),
-                    ),
-                  );
-                }
-                return ListView.builder(
-                  itemCount: provider.attendance.length,
-                  itemBuilder: (context, index) {
-                    final attendance = provider.attendance[index];
-                    return Card(
-                      elevation: 0,
-                      margin: const EdgeInsets.symmetric(vertical: 8),
-                      child: ListTile(
-                        title: Text(
-                          '${attendance.date} - ${attendance.status}',
-                          style: GoogleFonts.poppins(
-                            fontSize: TextStyles.regularText(context),
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-          ),
+          const SizedBox(height: 16),
+          const AttendanceSheet(),
           const SizedBox(height: 40),
         ],
       ),
@@ -173,50 +129,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 children: [
                   Expanded(
                     flex: 3,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.all(8),
-                      child: Consumer<StudentProvider>(
-                        builder: (context, provider, child) {
-                          if (provider.attendance.isEmpty) {
-                            return Center(
-                              child: Text(
-                                'No attendance data available',
-                                style: GoogleFonts.poppins(
-                                  fontSize: TextStyles.regularText(context),
-                                  fontWeight: FontWeight.w400,
-                                  color: Colors.black54,
-                                ),
-                              ),
-                            );
-                          }
-                          return ListView.builder(
-                            itemCount: provider.attendance.length,
-                            itemBuilder: (context, index) {
-                              final attendance = provider.attendance[index];
-                              return Card(
-                                elevation: 0,
-                                margin: const EdgeInsets.symmetric(vertical: 8),
-                                child: ListTile(
-                                  title: Text(
-                                    '${attendance.date} - ${attendance.status}',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: TextStyles.regularText(context),
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      ),
+                    child:const AttendanceSheet()
                     ),
-                  ),
                   const SizedBox(width: 16),
                   Expanded(
                     flex: 2,
@@ -402,5 +316,62 @@ class AttendanceSelector extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+
+class AttendanceSheet extends StatelessWidget {
+  const AttendanceSheet({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    final isCompact = screenWidth <= 900 || screenHeight <= 700;
+    return Container(
+            height: isCompact? 400 : null,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.all(8),
+            child: Consumer<StudentProvider>(
+              builder: (context, provider, child) {
+                if (provider.attendance.isEmpty) {
+                  return Center(
+                    child: Text(
+                      'No attendance data available',
+                      style: GoogleFonts.poppins(
+                        fontSize: TextStyles.regularText(context),
+                        fontWeight: FontWeight.w400,
+                        color: Colors.black54,
+                      ),
+                    ),
+                  );
+                }
+                return ListView.builder(
+                  itemCount: provider.attendance.length,
+                  itemBuilder: (context, index) {
+                    final attendance = provider.attendance[index];
+                    return Card(
+                      elevation: 0,
+                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      child: ListTile(
+                        title: Text(
+                          '${attendance.date} - ${attendance.status}',
+                          style: GoogleFonts.poppins(
+                            fontSize: TextStyles.regularText(context),
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          );
   }
 }
