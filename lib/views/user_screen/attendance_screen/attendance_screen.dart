@@ -28,6 +28,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     final screenWidth = MediaQuery.sizeOf(context).width;
     final screenHeight = MediaQuery.sizeOf(context).height;
     final isCompact = screenWidth <= 900 || screenHeight <= 700;
+
+    print('$screenHeight');
+    print('$screenWidth');
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -127,10 +131,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    flex: 3,
-                    child:const AttendanceSheet()
-                    ),
+                  Expanded(flex: 3, child: const AttendanceSheet()),
                   const SizedBox(width: 16),
                   Expanded(
                     flex: 2,
@@ -203,7 +204,7 @@ class AttendanceSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.sizeOf(context).width;
     final screenHeight = MediaQuery.sizeOf(context).height;
-    final isCompact = screenWidth <= 900 || screenHeight <= 800;
+    final isCompact = screenWidth <= 900 || screenHeight <= 600;
 
     final now = DateTime.now();
     final currentMonth = DateFormat('MMMM').format(now);
@@ -219,56 +220,59 @@ class AttendanceSelector extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: isCompact || screenHeight <= 750
+            ? MainAxisAlignment.spaceAround
+            : MainAxisAlignment.spaceBetween,
         children: [
           Text(
             "Today's Attendance",
             style: GoogleFonts.poppins(
-              fontSize: screenWidth < 800 || screenHeight < 900 ? 18 : 24,
+              fontSize: screenWidth <= 800 || screenHeight <= 900 ? 18 : 24,
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 20),
           Padding(
-            padding: screenWidth > 800 && screenWidth < 1100 ? const EdgeInsets.all(10.0) : const EdgeInsets.all(20.0),
+            padding: screenWidth > 800 || screenWidth < 1100
+                ? const EdgeInsets.symmetric(vertical: 10.0,horizontal: 10.0,)
+                : const EdgeInsets.symmetric(vertical: 20.0,horizontal: 20.0,),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              mainAxisSize: isCompact ? MainAxisSize.max : MainAxisSize.min,
+              mainAxisAlignment: isCompact || screenHeight <= 750
+                  ? MainAxisAlignment.spaceEvenly
+                  : MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          currentDate,
-                          style: GoogleFonts.poppins(
-                            fontSize: screenWidth < 800 || screenHeight < 900 ? 42 : 68,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                        Text(
-                          currentMonth,
-                          style: GoogleFonts.poppins(
-                            fontSize: screenWidth < 800 || screenHeight < 900 ? 24 : 36,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ],
+                    Text(
+                      currentDate,
+                      style: GoogleFonts.poppins(
+                        fontSize: screenWidth <= 800 || screenHeight <= 900
+                            ? 56
+                            : 68,
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
-                    if (!isCompact) SizedBox(height: 16,),
-                    if (!isCompact) _buildButtons(),
+                    Text(
+                      currentMonth,
+                      style: GoogleFonts.poppins(
+                        fontSize: screenWidth < 800 || screenHeight < 900
+                            ? 24
+                            : 36,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
                   ],
                 ),
-                    if (!isCompact) SizedBox(height: 16,),
+                if (isCompact || screenHeight <= 750) const SizedBox(width: 16),
 
-                if (isCompact) _buildButtons(),
+                if (isCompact || screenHeight <= 750) _buildButtons(),
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          if (!isCompact && screenHeight > 750) _buildButtons(),
         ],
       ),
     );
@@ -277,6 +281,7 @@ class AttendanceSelector extends StatelessWidget {
   Widget _buildButtons() {
     return Column(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         ElevatedButton(
           style: ElevatedButton.styleFrom(
@@ -299,6 +304,7 @@ class AttendanceSelector extends StatelessWidget {
         ElevatedButton(
           style: ElevatedButton.styleFrom(
             elevation: 0,
+            backgroundColor: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
               side: const BorderSide(color: Colors.black),
@@ -319,59 +325,58 @@ class AttendanceSelector extends StatelessWidget {
   }
 }
 
-
 class AttendanceSheet extends StatelessWidget {
   const AttendanceSheet({super.key});
 
   @override
   Widget build(BuildContext context) {
-    
     final screenWidth = MediaQuery.sizeOf(context).width;
     final screenHeight = MediaQuery.sizeOf(context).height;
     final isCompact = screenWidth <= 900 || screenHeight <= 700;
     return Container(
-            height: isCompact? 400 : null,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            padding: const EdgeInsets.all(8),
-            child: Consumer<StudentProvider>(
-              builder: (context, provider, child) {
-                if (provider.attendance.isEmpty) {
-                  return Center(
-                    child: Text(
-                      'No attendance data available',
-                      style: GoogleFonts.poppins(
-                        fontSize: TextStyles.regularText(context),
-                        fontWeight: FontWeight.w400,
-                        color: Colors.black54,
-                      ),
+      height: isCompact ? 400 : null,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      padding: const EdgeInsets.all(8),
+      child: Consumer<StudentProvider>(
+        builder: (context, provider, child) {
+          if (provider.attendance.isEmpty) {
+            return Center(
+              child: Text(
+                'No attendance data available',
+                style: GoogleFonts.poppins(
+                  fontSize: TextStyles.regularText(context),
+                  fontWeight: FontWeight.w400,
+                  color: Colors.black54,
+                ),
+              ),
+            );
+          }
+          return ListView.builder(
+            itemCount: provider.attendance.length,
+            itemBuilder: (context, index) {
+              final attendance = provider.attendance[index];
+              return Card(
+                elevation: 0,
+                color: Colors.grey.shade200,
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                child: ListTile(
+                  title: Text(
+                    '${attendance.date} - ${attendance.status}',
+                    style: GoogleFonts.poppins(
+                      fontSize: TextStyles.regularText(context),
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black,
                     ),
-                  );
-                }
-                return ListView.builder(
-                  itemCount: provider.attendance.length,
-                  itemBuilder: (context, index) {
-                    final attendance = provider.attendance[index];
-                    return Card(
-                      elevation: 0,
-                      margin: const EdgeInsets.symmetric(vertical: 8),
-                      child: ListTile(
-                        title: Text(
-                          '${attendance.date} - ${attendance.status}',
-                          style: GoogleFonts.poppins(
-                            fontSize: TextStyles.regularText(context),
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
+                  ),
+                ),
+              );
+            },
           );
+        },
+      ),
+    );
   }
 }
