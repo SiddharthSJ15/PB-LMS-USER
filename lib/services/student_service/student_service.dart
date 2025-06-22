@@ -191,14 +191,12 @@ class StudentService {
       final responseData = jsonDecode(response.body);
       print(responseData);
       if (response.statusCode == 200 || response.statusCode == 201) {
+        final attendanceCount = responseData['attendanceCount'];
         List<dynamic> body = responseData['attendance'];
         List<AttendanceModel> attendance = body
             .map((dynamic item) => AttendanceModel.fromJson(item))
             .toList();
-        return {
-          'attendance': attendance,
-          'status': true,
-        };
+        return {'attendance': attendance, 'count': attendanceCount, 'status': true};
       } else {
         return {'status': false};
       }
@@ -207,5 +205,27 @@ class StudentService {
     }
   }
 
-
+  Future<Map<String, dynamic>> markAttendanceService(
+    String token,
+    String status,
+    String date,
+  ) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/student/markAttendance'),
+        body: jsonEncode({'status': status, 'date': date}),
+        headers: {
+          'Content-Type': 'Application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return {'status': true};
+      } else {
+        return {'status': false};
+      }
+    } catch (e) {
+      throw Exception('Error in attendance service');
+    }
+  }
 }

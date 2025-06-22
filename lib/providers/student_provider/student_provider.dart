@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:pb_lms/models/user_model.dart';
 import 'package:pb_lms/services/student_service/student_service.dart';
 import 'package:pb_lms/utilities/token_manager.dart';
@@ -27,9 +28,11 @@ class StudentProvider with ChangeNotifier {
   List<AssignmentModel> _assignments = [];
   List<AssignmentModel> get assignments => _assignments;
 
-  
   List<AttendanceModel> _attendance = [];
   List<AttendanceModel> get attendance => _attendance;
+
+  int? __attendanceCount;
+  int? get attendanceCount => __attendanceCount;
 
   Future<bool> loginStudentProvider(String email, String password) async {
     _isLoading = true;
@@ -207,14 +210,18 @@ class StudentProvider with ChangeNotifier {
 
   Future<void> getAttendance(
     // int? studentId
-    ) async{
+  ) async {
     _isLoading = true;
     notifyListeners();
     try {
       final token = await TokenManager.getToken();
       final studentId = await UserManager.getUser();
-      final response = await _studentService.getAttendanceService(studentId, token);
+      final response = await _studentService.getAttendanceService(
+        studentId,
+        token,
+      );
       if (response['status']) {
+        __attendanceCount = response['count'];
         _attendance = response['attendance'];
       } else {
         _attendance = [];
@@ -224,6 +231,41 @@ class StudentProvider with ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<void> submitAttendance(bool status) async {
+    try {
+      String? value;
+      String? date;
+      final currentDate = DateTime.now();
+      if (status) {
+        date = DateFormat('yyyy-MM-dd').format(currentDate);
+        value = 'present';
+      } else {
+        date = DateFormat('yyyy-MM-dd').format(currentDate);
+        value = 'absent';
+      }
+      final token = await TokenManager.getToken();
+      if (token == null || value == null || date == null) {
+        print(token);
+        print(value);
+        print(date);
+        throw Exception('Token, value, or date is null');
+      }
+      final response = await _studentService.markAttendanceService(
+        token,
+        value,
+        date,
+      );
+      if (response['status']) {
+        getAttendance();
+      } else {
+        throw Exception('Failed to mark attendance');
+      }
+    } catch (e) {
+      print('Error in attendance provider: $e');
+      throw Exception('Error in attendance provider: $e');
     }
   }
 }
