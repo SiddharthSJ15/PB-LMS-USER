@@ -31,8 +31,14 @@ class StudentProvider with ChangeNotifier {
   List<AttendanceModel> _attendance = [];
   List<AttendanceModel> get attendance => _attendance;
 
+  Map<String, dynamic>? _live;
+  Map<String, dynamic>? get live => _live;
+
   int? __attendanceCount;
   int? get attendanceCount => __attendanceCount;
+
+  bool? _alreadyMarked;
+  bool? get alreadyMarked => _alreadyMarked;
 
   Future<bool> loginStudentProvider(String email, String password) async {
     _isLoading = true;
@@ -208,6 +214,15 @@ class StudentProvider with ChangeNotifier {
     }
   }
 
+  bool hasMarkedTodayAttendance(List<AttendanceModel> attendanceList) {
+    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    return attendanceList.any(
+      (a) =>
+          DateFormat('yyyy-MM-dd').format(DateTime.tryParse(a.createdDate!)!) ==
+          today,
+    );
+  }
+
   Future<void> getAttendance(
     // int? studentId
   ) async {
@@ -216,6 +231,7 @@ class StudentProvider with ChangeNotifier {
     try {
       final token = await TokenManager.getToken();
       final studentId = await UserManager.getUser();
+      final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
       final response = await _studentService.getAttendanceService(
         studentId,
         token,
@@ -223,6 +239,13 @@ class StudentProvider with ChangeNotifier {
       if (response['status']) {
         __attendanceCount = response['count'];
         _attendance = response['attendance'];
+        _alreadyMarked = _attendance.any(
+          (values) =>
+              DateFormat(
+                'yyyy-MM-dd',
+              ).format(DateTime.tryParse(values.date!)!) ==
+              date,
+        );
       } else {
         _attendance = [];
       }
@@ -234,7 +257,7 @@ class StudentProvider with ChangeNotifier {
     }
   }
 
-  Future<void> submitAttendance(bool status) async {
+  Future<bool> submitAttendance(bool status) async {
     try {
       String? value;
       String? date;
@@ -247,25 +270,44 @@ class StudentProvider with ChangeNotifier {
         value = 'absent';
       }
       final token = await TokenManager.getToken();
-      if (token == null || value == null || date == null) {
-        print(token);
-        print(value);
-        print(date);
-        throw Exception('Token, value, or date is null');
-      }
+
       final response = await _studentService.markAttendanceService(
-        token,
+        token!,
         value,
         date,
       );
       if (response['status']) {
         getAttendance();
+        return true;
       } else {
-        throw Exception('Failed to mark attendance');
+        return false;
       }
     } catch (e) {
       print('Error in attendance provider: $e');
       throw Exception('Error in attendance provider: $e');
+    }
+  }
+
+  Future<void> getLiveLink(int courseId, int batchId) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final token = await TokenManager.getToken();
+      final response = await _studentService.getLiveLinkService(
+        courseId,
+        batchId,
+        token!,
+      );
+      if (response['status']) {
+        _live = response['data'];
+      } else {
+        _live = null;
+      }
+    } catch (e) {
+      _live = null;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 }
