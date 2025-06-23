@@ -184,3 +184,15 @@ class AttendanceBatchModel {
     batchName = json['batchName'];
   }
 }
+
+class LiveModel {
+  String? message;
+  String? liveLink;
+  String? liveStartTime;
+  LiveModel({this.message, this.liveLink, this.liveStartTime});
+  LiveModel.fromJson(Map<String, dynamic> json) {
+    message = json['message'];
+    liveLink = json['liveLink'];
+    liveStartTime = json['liveStartTime'];
+  }
+}

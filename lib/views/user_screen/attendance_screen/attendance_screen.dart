@@ -225,9 +225,25 @@ class AttendanceSelector extends StatefulWidget {
 }
 
 class _AttendanceSelectorState extends State<AttendanceSelector> {
-  void markAttendance(bool value) {
+  void markAttendance(bool value) async {
     final provider = Provider.of<StudentProvider>(context, listen: false);
-    final response = provider.submitAttendance(value);
+    final response = await provider.submitAttendance(value);
+    final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    if (response) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('You have marked your attendance for: $date'),
+          backgroundColor: const Color.fromRGBO(12, 201, 70, 1),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error marking your attendance'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -236,6 +252,7 @@ class _AttendanceSelectorState extends State<AttendanceSelector> {
     final screenWidth = MediaQuery.sizeOf(context).width;
     final screenHeight = MediaQuery.sizeOf(context).height;
     final isCompact = screenWidth <= 900 || screenHeight <= 600;
+    final bool isMarked = provider.alreadyMarked ?? false;
 
     final now = DateTime.now();
     final currentMonth = DateFormat('MMMM').format(now);
@@ -314,7 +331,7 @@ class _AttendanceSelectorState extends State<AttendanceSelector> {
                               fontSize: screenWidth < 800 || screenHeight < 900
                                   ? 24
                                   : 36,
-                              fontWeight: FontWeight.w400,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
@@ -322,14 +339,61 @@ class _AttendanceSelectorState extends State<AttendanceSelector> {
                       if (isCompact || screenHeight <= 750)
                         const SizedBox(width: 16),
 
-                      if (isCompact || screenHeight <= 750) _buildButtons(),
+                      if (isCompact || screenHeight <= 750)
+                        isMarked ? _alreadyMarkedButton() : _buildButtons(),
                     ],
                   ),
                 ),
-                if (!isCompact && screenHeight > 750) _buildButtons(),
+                if (!isCompact && screenHeight > 750)
+                  isMarked ? _alreadyMarkedButton() : _buildButtons(),
               ],
             ),
           );
+  }
+
+  Widget _alreadyMarkedButton() {
+    final provider = Provider.of<StudentProvider>(context);
+    if (provider.isLoading) {
+      return Shimmer.fromColors(
+        baseColor: Colors.grey.shade300,
+        highlightColor: Colors.grey.shade100,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              decoration: BoxDecoration(shape: BoxShape.circle),
+
+              padding: const EdgeInsets.all(8.0),
+              child: Icon(Icons.check, color: Colors.white, size: 40),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              width: 160,
+              height: 20,
+              color: Colors.green, // This will shimmer
+            ),
+          ],
+        ),
+      );
+    }
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          decoration: BoxDecoration(shape: BoxShape.circle,color: Colors.green),
+          child: Icon(Icons.check_circle, color: Colors.white, size: 40),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          "Attendance already marked!",
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            color: Colors.green,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildButtons() {
@@ -435,9 +499,7 @@ class AttendanceSheet extends StatelessWidget {
                   ),
                   itemBuilder: (context, index) {
                     final attendance = provider.attendance[index];
-                    final dateTime = DateTime.tryParse(
-                      attendance.date!,
-                    )!;
+                    final dateTime = DateTime.tryParse(attendance.date!)!;
                     final day = DateFormat('EEEE').format(dateTime);
                     final date = DateFormat('dd').format(dateTime);
                     final month = DateFormat('MMM').format(dateTime);
@@ -457,199 +519,193 @@ class AttendanceSheet extends StatelessWidget {
                               ? BorderSide(color: Colors.black, width: 2)
                               : BorderSide.none,
                         ),
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(12),
-                          onTap: () {
-                            // Handle attendance item tap
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                // Date card
-                                Container(
-                                  width: 60,
-                                  height: 60,
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: isToday
-                                          ? [Colors.black, Colors.black87]
-                                          : [
-                                              Colors.grey.shade100,
-                                              Colors.grey.shade200,
-                                            ],
-                                    ),
-                                    borderRadius: BorderRadius.circular(12),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // Date card
+                              Container(
+                                width: 60,
+                                height: 60,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: isToday
+                                        ? [Colors.black, Colors.black87]
+                                        : [
+                                            Colors.grey.shade100,
+                                            Colors.grey.shade200,
+                                          ],
                                   ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        date,
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: isToday
-                                              ? Colors.white
-                                              : Colors.black87,
-                                        ),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      date,
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: isToday
+                                            ? Colors.white
+                                            : Colors.black87,
                                       ),
+                                    ),
+                                    Text(
+                                      month.toUpperCase(),
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: 0.5,
+                                        color: isToday
+                                            ? Colors.white.withAlpha(230)
+                                            : Colors.grey.shade600,
+                                      ),
+                                    ),
+                                    if (screenHeight < 600 &&
+                                            screenWidth < 500 ||
+                                        !isLandscape)
                                       Text(
-                                        month.toUpperCase(),
+                                        year,
                                         style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w900,
                                           letterSpacing: 0.5,
                                           color: isToday
                                               ? Colors.white.withAlpha(230)
                                               : Colors.grey.shade600,
                                         ),
                                       ),
-                                      if (screenHeight < 600 &&
-                                              screenWidth < 500 ||
-                                          !isLandscape)
-                                        Text(
-                                          year,
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w900,
-                                            letterSpacing: 0.5,
-                                            color: isToday
-                                                ? Colors.white.withAlpha(230)
-                                                : Colors.grey.shade600,
+                                  ],
+                                ),
+                              ),
+                        
+                              const SizedBox(width: 16),
+                        
+                              // Day and details
+                              if (screenHeight > 600 && screenWidth > 500 ||
+                                  isLandscape)
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Flexible(
+                                            child: Text(
+                                              day,
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.black87,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
                                           ),
+                                          if (isToday) ...[
+                                            const SizedBox(width: 4),
+                                            Flexible(
+                                              child: Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 6,
+                                                      vertical: 2,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.black,
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                        12,
+                                                      ),
+                                                ),
+                                                child: Text(
+                                                  'Today',
+                                                  style: TextStyle(
+                                                    fontSize: 9,
+                                                    fontWeight:
+                                                        FontWeight.w600,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        '$date $month $year',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey.shade600,
                                         ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ],
                                   ),
                                 ),
-
-                                const SizedBox(width: 16),
-
-                                // Day and details
-                                if (screenHeight > 600 && screenWidth > 500 ||
-                                    isLandscape)
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Flexible(
-                                              child: Text(
-                                                day,
-                                                style: const TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: Colors.black87,
-                                                ),
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
-                                            if (isToday) ...[
-                                              const SizedBox(width: 4),
-                                              Flexible(
-                                                child: Container(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        horizontal: 6,
-                                                        vertical: 2,
-                                                      ),
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.black,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          12,
-                                                        ),
-                                                  ),
-                                                  child: Text(
-                                                    'Today',
-                                                    style: TextStyle(
-                                                      fontSize: 9,
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ],
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          '$date $month $year',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey.shade600,
-                                          ),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-
-                                // Status indicator (you can customize based on attendance status)
-                                Container(
-                                  width: screenHeight < 600 || screenWidth < 500
-                                      ? 50
-                                      : 100,
-                                  alignment: Alignment.center,
-                                  padding: EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    shape:
-                                        screenHeight < 600 || screenWidth < 500
-                                        ? BoxShape.circle
-                                        : BoxShape.rectangle,
-                                    borderRadius:
-                                        screenHeight < 600 || screenWidth < 500
-                                        ? null
-                                        : BorderRadius.circular(20),
-                                    color: isToday
-                                        ? Colors.black
-                                        : attendance.status == 'present'
-                                        ? const Color.fromRGBO(
-                                            12,
-                                            201,
-                                            70,
-                                            1,
-                                          ).withAlpha(179)
-                                        : attendance.status == 'absent'
-                                        ? Colors.red.withAlpha(179)
-                                        : Colors.orange.withAlpha(179),
-                                    // shape: BoxShape.circle,
-                                  ),
-                                  child: screenHeight < 600 || screenWidth < 500
-                                      ? Icon(
-                                          attendance.status == 'present'
-                                              ? Icons.done
-                                              : attendance.status == 'absent'
-                                              ? Icons.close
-                                              : Icons.priority_high,
-                                          color: Colors.white,
-                                        )
-                                      : Text(
-                                          attendance.status == 'present'
-                                              ? 'Present'
-                                              : attendance.status == 'absent'
-                                              ? 'Absent'
-                                              : 'N/A',
-                                          style: GoogleFonts.poppins(
-                                            fontWeight: FontWeight.w600,
-                                            color:
-                                                attendance.status == 'present'
-                                                ? Colors.white
-                                                : attendance.status == 'absent'
-                                                ? Colors.white
-                                                : Colors.black,
-                                          ),
-                                        ),
+                        
+                              // Status indicator (you can customize based on attendance status)
+                              Container(
+                                width: screenHeight < 600 || screenWidth < 500
+                                    ? 50
+                                    : 100,
+                                alignment: Alignment.center,
+                                padding: EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  shape:
+                                      screenHeight < 600 || screenWidth < 500
+                                      ? BoxShape.circle
+                                      : BoxShape.rectangle,
+                                  borderRadius:
+                                      screenHeight < 600 || screenWidth < 500
+                                      ? null
+                                      : BorderRadius.circular(20),
+                                  color: isToday
+                                      ? Colors.black
+                                      : attendance.status == 'present'
+                                      ? const Color.fromRGBO(
+                                          12,
+                                          201,
+                                          70,
+                                          1,
+                                        ).withAlpha(179)
+                                      : attendance.status == 'absent'
+                                      ? Colors.red.withAlpha(179)
+                                      : Colors.orange.withAlpha(179),
+                                  // shape: BoxShape.circle,
                                 ),
-                              ],
-                            ),
+                                child: screenHeight < 600 || screenWidth < 500
+                                    ? Icon(
+                                        attendance.status == 'present'
+                                            ? Icons.done
+                                            : attendance.status == 'absent'
+                                            ? Icons.close
+                                            : Icons.priority_high,
+                                        color: Colors.white,
+                                      )
+                                    : Text(
+                                        attendance.status == 'present'
+                                            ? 'Present'
+                                            : attendance.status == 'absent'
+                                            ? 'Absent'
+                                            : 'N/A',
+                                        style: GoogleFonts.poppins(
+                                          fontWeight: FontWeight.w600,
+                                          color:
+                                              attendance.status == 'present'
+                                              ? Colors.white
+                                              : attendance.status == 'absent'
+                                              ? Colors.white
+                                              : Colors.black,
+                                        ),
+                                      ),
+                              ),
+                            ],
                           ),
                         ),
                       ),

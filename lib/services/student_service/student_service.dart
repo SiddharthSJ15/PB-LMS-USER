@@ -196,7 +196,11 @@ class StudentService {
         List<AttendanceModel> attendance = body
             .map((dynamic item) => AttendanceModel.fromJson(item))
             .toList();
-        return {'attendance': attendance, 'count': attendanceCount, 'status': true};
+        return {
+          'attendance': attendance,
+          'count': attendanceCount,
+          'status': true,
+        };
       } else {
         return {'status': false};
       }
@@ -226,6 +230,32 @@ class StudentService {
       }
     } catch (e) {
       throw Exception('Error in attendance service');
+    }
+  }
+
+  Future<Map<String, dynamic>> getLiveLinkService(
+    int? courseId,
+    int? batchId,
+    String? token,
+  ) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/student/getLiveLink/$courseId/$batchId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      final responseData = jsonDecode(response.body);
+      print(responseData);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // Just return the map as 'data'
+        return {'data': responseData, 'status': true};
+      } else {
+        return {'status': false};
+      }
+    } catch (e) {
+      throw Exception('Error fetching live data service: $e');
     }
   }
 }
