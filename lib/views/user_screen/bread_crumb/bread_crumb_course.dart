@@ -85,8 +85,30 @@ class BreadCrumb extends StatelessWidget {
 
             if (navProvider.isViewingLessons)
               InkWell(
+                onTap: navProvider.isViewingAssignments
+                  ? navProvider.navigateBackToLessons
+                  : null,
                 child: Text(
                   'Lessons/Assignments',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: navProvider.isViewingAssignments
+                      ? Color.fromARGB(255, 12, 201, 70)
+                      : Colors.black,
+                  ),
+                ),
+              ),
+
+            if (navProvider.isViewingAssignments)
+              Icon(Icons.arrow_forward_ios_rounded, size: 16),
+
+            if (navProvider.isViewingAssignments) SizedBox(width: 8),
+
+            if (navProvider.isViewingAssignments)
+              InkWell(
+                child: Text(
+                  'Assignment Submission',
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -94,39 +116,6 @@ class BreadCrumb extends StatelessWidget {
                   ),
                 ),
               ),
-
-            // if (navProvider.isViewingLessons)
-            //   TextButton(
-            //   onPressed: navProvider.isViewingAssignments
-            //         ? navProvider.navigateBackToAssignments
-            //         : null,
-            //     child: Text(
-            //       'Lessons/Assignments',
-            //       style: GoogleFonts.poppins(
-            //         fontWeight:
-            //           navProvider.isViewingAssignments
-            //               ? FontWeight.w500
-            //               : FontWeight.w600,
-            //       color:
-            //           navProvider.isViewingAssignments
-            //               ? Color.fromARGB(255, 12, 201, 70)
-            //               : Colors.black,
-            //       ),
-            //     ),
-            //   ),
-
-            // if (navProvider.isViewingAssignments)
-            //   Icon(Icons.arrow_forward_ios_rounded, size: 16),
-
-            // if (navProvider.isViewingAssignments)
-            //   Text(
-            //     navProvider.selectedAssignmentName!,
-            //     style: GoogleFonts.poppins(
-            //       fontSize: 16,
-            //       fontWeight: FontWeight.w600,
-            //       color: Colors.black,
-            //     ),
-            //   ),
           ],
         ),
       ],

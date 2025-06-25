@@ -10,15 +10,22 @@ class NavigationProvider extends ChangeNotifier {
   int? get selectedModuleId => _selectedModuleId;
 
   bool get isViewingModules => _selectedCourseId != null;
-  
+
   bool get isViewingLessons => _selectedModuleId != null;
+
+  int? _selectedAssignmentId;
+  int? get selectedAssignmentId => _selectedAssignmentId;
+
+  bool get isViewingAssignments => _selectedAssignmentId != null;
 
   void setIndex(int index) {
     _selectedIndex = index;
 
-    _selectedCourseId = null; 
+    _selectedCourseId = null;
 
-    _selectedModuleId = null; 
+    _selectedModuleId = null;
+
+    _selectedAssignmentId = null;
 
     notifyListeners();
   }
@@ -31,8 +38,9 @@ class NavigationProvider extends ChangeNotifier {
   void navigateBackToCourses() {
     _selectedCourseId = null;
     _selectedModuleId = null;
+    _selectedAssignmentId = null;
     notifyListeners();
-  } 
+  }
 
   void navigateToLessons(int moduleId) {
     _selectedModuleId = moduleId;
@@ -41,6 +49,18 @@ class NavigationProvider extends ChangeNotifier {
 
   void navigateBackToModules() {
     _selectedModuleId = null;
+    _selectedAssignmentId = null;
+
+    notifyListeners();
+  }
+
+  void navigateToAssignments(int? assignmentId) {
+    _selectedAssignmentId = assignmentId;
+    notifyListeners();
+  }
+
+  void navigateBackToLessons() {
+    _selectedAssignmentId = null;
     notifyListeners();
   }
 
