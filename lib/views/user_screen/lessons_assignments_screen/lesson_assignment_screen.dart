@@ -7,6 +7,7 @@ import 'package:pb_lms/models/user_model.dart';
 import 'package:pb_lms/providers/navigation_provider/navigation_provider.dart';
 import 'package:pb_lms/providers/student_provider/student_provider.dart';
 import 'package:pb_lms/views/user_screen/bread_crumb/bread_crumb_course.dart';
+import 'package:pb_lms/views/user_screen/assignment_submission/assignment_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -17,7 +18,8 @@ class LessonAssignmentScreen extends StatefulWidget {
   State<LessonAssignmentScreen> createState() => _LessonAssignmentScreenState();
 }
 
-class _LessonAssignmentScreenState extends State<LessonAssignmentScreen> {
+class _LessonAssignmentScreenState extends State<LessonAssignmentScreen>
+    with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
@@ -122,7 +124,11 @@ class _LessonAssignmentScreenState extends State<LessonAssignmentScreen> {
   Widget build(BuildContext context) {
     final provider = Provider.of<StudentProvider>(context);
     final navProvider = Provider.of<NavigationProvider>(context, listen: false);
-    final user = provider.student;
+
+    if (navProvider.isViewingAssignments &&
+        navProvider.selectedAssignmentId != null) {
+      return AssignmentScreen(assignmentId: navProvider.selectedAssignmentId!);
+    }
 
     return Scaffold(
       body: Container(
@@ -265,8 +271,6 @@ class _LessonAssignmentScreenState extends State<LessonAssignmentScreen> {
   }
 
   Widget buildLessonsWidget(List<LessonModel> lessons) {
-    final navProvider = Provider.of<NavigationProvider>(context, listen: false);
-    final screenWidth = MediaQuery.sizeOf(context).width;
     if (lessons.isEmpty) {
       return Container(
         alignment: Alignment.center,
@@ -432,8 +436,10 @@ class _LessonAssignmentScreenState extends State<LessonAssignmentScreen> {
   }
 
   Widget buildAssignmentsWidget(List<AssignmentModel> assignments) {
-    final navProvider = Provider.of<NavigationProvider>(context, listen: false);
     final screenWidth = MediaQuery.sizeOf(context).width;
+    final navProvider = Provider.of<NavigationProvider>(context);
+    final provider = Provider.of<StudentProvider>(context);
+
     if (assignments.isEmpty) {
       return Container(
         alignment: Alignment.center,
@@ -477,157 +483,44 @@ class _LessonAssignmentScreenState extends State<LessonAssignmentScreen> {
               const Divider(),
           itemBuilder: (context, index) {
             final assignment = assignments[index];
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              color: Colors.white,
-              child: InkWell(
-                onTap: () {
-                  setState(() {
-                    final bool isSameAssignment =
-                        selectedAssignment == assignment.assignmentId;
-                    final bool isCurrentlyExpanded =
-                        assignmentView && isSameAssignment;
-
-                    if (isCurrentlyExpanded) {
-                      // Case 1: Clicking expanded lesson → Collapse
-                      assignmentView = false;
-                      selectedAssignment = null;
-                    } else {
-                      // Case 2: Clicking different lesson OR clicking collapsed lesson → Expand
-                      selectedAssignment = assignment.assignmentId;
-                      assignmentView = true;
-                    }
-                  });
-                },
-                child: Padding(
-                  padding: assignments.length >= 2
-                      ? const EdgeInsets.fromLTRB(0, 5, 0, 5)
-                      : EdgeInsets.zero,
-                  child: Column(
-                    children: [
-                      // Main row with title and actions
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Title section - takes most space but leaves room for actions
-                          Expanded(
-                            child: Text(
-                              assignment.title!,
-                              style: GoogleFonts.poppins(
-                                fontWeight: FontWeight.w500,
-                                fontSize: 16,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines:
-                                  assignmentView &&
-                                      selectedAssignment ==
-                                          assignment.assignmentId
-                                  ? 3
-                                  : 1,
+            return InkWell(
+              onTap: () {
+                  provider.selectAssignmentById(assignment.assignmentId);
+                  navProvider.navigateToAssignments(assignment.assignmentId);
+                  },
+              child: Padding(
+                padding: assignments.length >= 2
+                    ? const EdgeInsets.fromLTRB(0, 5, 0, 5)
+                    : EdgeInsets.zero,
+                child: Column(
+                  children: [
+                    // Main row with title and actions
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Title section - takes most space but leaves room for actions
+                        Expanded(
+                          child: Text(
+                            assignment.title!,
+                            style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
                             ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 3,
                           ),
+                        ),
 
-                          // Fixed width for actions to prevent overflow
-                          SizedBox(
-                            //width: 200, // Fixed width for action buttons
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [],
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      // Expanded details section (shown only when expanded)
-                      if (assignmentView &&
-                          selectedAssignment == assignment.assignmentId) ...[
-                        const SizedBox(height: 8),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.only(left: 8.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Description section
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Description:',
-                                    style: GoogleFonts.poppins(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      assignment.description!,
-                                      style: GoogleFonts.poppins(
-                                        fontWeight: FontWeight.w400,
-                                        fontSize: 14,
-                                      ),
-                                      maxLines: 5,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              const SizedBox(height: 8),
-
-                              // Due date section
-                              Row(
-                                children: [
-                                  Text(
-                                    'Due Date: ',
-                                    style: GoogleFonts.poppins(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                  Flexible(
-                                    child: Text(
-                                      DateFormat(
-                                        'yyyy-MM-dd',
-                                      ).format(assignment.dueDate!),
-                                      style: GoogleFonts.poppins(
-                                        fontWeight: FontWeight.w400,
-                                        fontSize: 14,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              const SizedBox(height: 8),
-
-                              // View Submission section
-                              if (screenWidth < 700)
-                                ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    foregroundColor: Colors.black,
-                                    elevation: 0,
-                                    side: const BorderSide(color: Colors.black),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(30),
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                    ),
-                                  ),
-                                  onPressed: () {},
-                                  child: Text('View Submissions'),
-                                ),
-                            ],
+                        SizedBox(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [Icon(Icons.arrow_forward_ios_outlined)],
                           ),
                         ),
                       ],
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             );

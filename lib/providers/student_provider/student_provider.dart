@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pb_lms/models/user_model.dart';
+import 'package:pb_lms/providers/navigation_provider/navigation_provider.dart';
 import 'package:pb_lms/services/student_service/student_service.dart';
 import 'package:pb_lms/utilities/token_manager.dart';
 import 'package:pb_lms/utilities/user_manager.dart';
@@ -39,6 +40,9 @@ class StudentProvider with ChangeNotifier {
 
   bool? _alreadyMarked;
   bool? get alreadyMarked => _alreadyMarked;
+
+  AssignmentModel? _selectedAssignment;
+  AssignmentModel? get selectedAssignment => _selectedAssignment;
 
   Future<bool> loginStudentProvider(String email, String password) async {
     _isLoading = true;
@@ -208,6 +212,80 @@ class StudentProvider with ChangeNotifier {
       }
     } catch (e) {
       throw Exception('Error in Assignments: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  void selectAssignmentById(int? id) {
+    try {
+      _isLoading = true;
+      notifyListeners();
+      _selectedAssignment = _assignments.firstWhere(
+        (a) => a.assignmentId == id,
+      );
+      print(_selectedAssignment.toString());
+    } catch (e) {
+      throw Exception('Error fetching the assignment:$e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<Map<String, dynamic>> submitAssignment(
+    String? content,
+    String? submissionLink,
+    int assignmentId,
+  ) async {
+    try {
+      final token = await TokenManager.getToken();
+      final response = await _studentService.submitAssignmentService(
+        token,
+        assignmentId,
+        content,
+        submissionLink,
+      );
+      if (response['status']) {
+        getAssignments(
+          NavigationProvider().selectedModuleId,
+          NavigationProvider().selectedCourseId,
+        );
+        return {
+          'submission': response['submission'],
+          'status': true,
+          'message': response['message'],
+        };
+      } else {
+        return {'message': response['message'], 'status': false};
+      }
+    } catch (e) {
+      throw Exception('Error submitting assignment');
+    }
+  }
+
+  Future<Map<String, dynamic>> getSubmittedAssignment(int assignmentId) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+      final token = await TokenManager.getToken();
+      final response = await _studentService.getSubmitAssignmentService(
+        assignmentId,
+        token!,
+      );
+      if (response['status']) {
+        return {
+          'submission': response['submission'],
+          'status': true,
+          'message': response['message'],
+        };
+      } else {
+        return {'message': response['message'], 'status': false};
+      }
+    } catch (e) {
+      print('Error fetching submitted assignment:$e');
+      throw Exception('Error in fetching assignment submission');
     } finally {
       _isLoading = false;
       notifyListeners();

@@ -80,9 +80,10 @@ class _LiveScreenState extends State<LiveScreen> {
               initialSelection: selectedCourseId,
               enableSearch: true,
               enableFilter: true,
+
               inputDecorationTheme: InputDecorationTheme(
-                enabledBorder: OutlineInputBorder(),
-                focusedBorder: OutlineInputBorder(),
+                enabledBorder: OutlineInputBorder(borderSide: BorderSide.none),
+                focusedBorder: OutlineInputBorder(borderSide: BorderSide.none),
                 disabledBorder: OutlineInputBorder(borderSide: BorderSide.none),
                 hintStyle: TextStyle(color: Colors.black),
                 fillColor: Colors.white,

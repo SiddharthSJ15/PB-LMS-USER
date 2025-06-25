@@ -176,6 +176,71 @@ class StudentService {
     }
   }
 
+  Future<Map<String, dynamic>> submitAssignmentService(
+    String? token,
+    int? assignmentId,
+    String? content,
+    String? submissionLink,
+  ) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/student/submitAssignment/$assignmentId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'content': content,
+          'submissionLink': submissionLink,
+        }),
+      );
+      final responseData = jsonDecode(response.body);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return {
+          'status': true,
+          'submission': responseData['submission'],
+          'message': responseData['message'],
+        };
+      } else {
+        return {'status': false, 'message': responseData['message']};
+      }
+    } catch (e) {
+      throw Exception('Error in submitting assignment service:$e');
+    }
+  }
+
+  Future<Map<String, dynamic>> getSubmitAssignmentService(
+    int? assignmentId,
+    String token,
+  ) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/student/getStudentSubmittedAssignment/$assignmentId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      final responseData = jsonDecode(response.body);
+      print(responseData);
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print(responseData['submission']);
+        return {
+          'status': true,
+          'submission': responseData['submission'],
+          'message': responseData['message'],
+        };
+      } else {
+        return {'status': false, 'message': responseData['message']};
+      }
+    } catch (e) {
+      print('Error in fetching assignment service: $e');
+      throw Exception('Error in fetching assignment service: $e');
+    }
+  }
+
   Future<Map<String, dynamic>> getAttendanceService(
     int? studentId,
     String? token,
