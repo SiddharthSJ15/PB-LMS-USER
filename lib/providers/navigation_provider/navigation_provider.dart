@@ -16,7 +16,14 @@ class NavigationProvider extends ChangeNotifier {
   int? _selectedAssignmentId;
   int? get selectedAssignmentId => _selectedAssignmentId;
 
+  int? _selectedLessonId;
+  int? get selectedLessonId => _selectedLessonId;
+
+  String? _videoUrl;
+  String? get videoUrl => _videoUrl;
+
   bool get isViewingAssignments => _selectedAssignmentId != null;
+  bool get isViewingVideo => _selectedLessonId != null;
 
   void setIndex(int index) {
     _selectedIndex = index;
@@ -26,6 +33,10 @@ class NavigationProvider extends ChangeNotifier {
     _selectedModuleId = null;
 
     _selectedAssignmentId = null;
+
+    _selectedLessonId = null;
+
+    _videoUrl = null;
 
     notifyListeners();
   }
@@ -39,6 +50,8 @@ class NavigationProvider extends ChangeNotifier {
     _selectedCourseId = null;
     _selectedModuleId = null;
     _selectedAssignmentId = null;
+    _selectedLessonId = null;
+    _videoUrl = null;
     notifyListeners();
   }
 
@@ -50,7 +63,8 @@ class NavigationProvider extends ChangeNotifier {
   void navigateBackToModules() {
     _selectedModuleId = null;
     _selectedAssignmentId = null;
-
+    _selectedLessonId = null;
+    _videoUrl = null;
     notifyListeners();
   }
 
@@ -59,9 +73,16 @@ class NavigationProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void navigateBackToLessons() {
-    _selectedAssignmentId = null;
+  void navigateToVideo(int? lessonId, String? url) {
+    _selectedLessonId = lessonId;
+    _videoUrl = url;
     notifyListeners();
   }
 
+  void navigateBackToLessons() {
+    _selectedAssignmentId = null;
+    _selectedLessonId = null;
+    _videoUrl = null;
+    notifyListeners();
+  }
 }
