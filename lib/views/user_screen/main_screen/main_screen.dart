@@ -40,6 +40,7 @@ class _MainScreenState extends State<MainScreen> {
       context,
       listen: false,
     ).logoutStudentProvider();
+      Provider.of<NavigationProvider>(context, listen: false).resetNavigation();
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => const LoginScreen()),
