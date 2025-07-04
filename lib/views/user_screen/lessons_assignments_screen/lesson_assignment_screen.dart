@@ -8,6 +8,8 @@ import 'package:pb_lms/providers/navigation_provider/navigation_provider.dart';
 import 'package:pb_lms/providers/student_provider/student_provider.dart';
 import 'package:pb_lms/views/user_screen/bread_crumb/bread_crumb_course.dart';
 import 'package:pb_lms/views/user_screen/assignment_submission/assignment_screen.dart';
+import 'package:pb_lms/views/user_screen/lessons_assignments_screen/video_lesson.dart';
+import 'package:pb_lms/widgets/video_player.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -80,7 +82,7 @@ class _LessonAssignmentScreenState extends State<LessonAssignmentScreen>
     });
   }
 
-  Future<void> _launchVideoLink(String url) async {
+  Future<void> _launchLink(String url) async {
     try {
       final Uri uri = Uri.parse(url);
       if (await canLaunchUrl(uri)) {
@@ -128,6 +130,10 @@ class _LessonAssignmentScreenState extends State<LessonAssignmentScreen>
     if (navProvider.isViewingAssignments &&
         navProvider.selectedAssignmentId != null) {
       return AssignmentScreen(assignmentId: navProvider.selectedAssignmentId!);
+    }
+
+    if (navProvider.isViewingVideo) {
+      return VideoLesson(url: navProvider.videoUrl!);
     }
 
     return Scaffold(
@@ -271,6 +277,7 @@ class _LessonAssignmentScreenState extends State<LessonAssignmentScreen>
   }
 
   Widget buildLessonsWidget(List<LessonModel> lessons) {
+    final navProvider = Provider.of<NavigationProvider>(context);
     if (lessons.isEmpty) {
       return Container(
         alignment: Alignment.center,
@@ -372,8 +379,19 @@ class _LessonAssignmentScreenState extends State<LessonAssignmentScreen>
                                       horizontal: 16,
                                     ),
                                   ),
-                                  onPressed: () =>
-                                      _launchVideoLink(lesson.videoLink!),
+                                  // onPressed: () => navProvider.navigateToVideo(
+                                  //   lesson.lessonId,
+                                  //   lesson.videoLink!,
+                                  // ),
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            VideoPlayerScreen(url: lesson.videoLink!),
+                                      ),
+                                    );
+                                  },
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
@@ -409,8 +427,7 @@ class _LessonAssignmentScreenState extends State<LessonAssignmentScreen>
                                       horizontal: 16,
                                     ),
                                   ),
-                                  onPressed: () =>
-                                      _launchVideoLink(lesson.pdfPath!),
+                                  onPressed: () => _launchLink(lesson.pdfPath!),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
@@ -485,9 +502,9 @@ class _LessonAssignmentScreenState extends State<LessonAssignmentScreen>
             final assignment = assignments[index];
             return InkWell(
               onTap: () {
-                  provider.selectAssignmentById(assignment.assignmentId);
-                  navProvider.navigateToAssignments(assignment.assignmentId);
-                  },
+                provider.selectAssignmentById(assignment.assignmentId);
+                navProvider.navigateToAssignments(assignment.assignmentId);
+              },
               child: Padding(
                 padding: assignments.length >= 2
                     ? const EdgeInsets.fromLTRB(0, 5, 0, 5)

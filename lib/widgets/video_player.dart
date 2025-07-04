@@ -17,9 +17,17 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   double _videoDuration = 0;
   Timer? _positionTimer;
   String _currentQuality = 'auto';
-  final List<String> _qualities = ['auto', '144p', '240p', '360p', '480p', '720p', '1080p'];
+  final List<String> _qualities = [
+    'auto',
+    '144p',
+    '240p',
+    '360p',
+    '480p',
+    '720p',
+    '1080p',
+  ];
   bool _showQualityMenu = false;
-  
+
   // Define skip duration in seconds
   final int _skipDuration = 10;
 
@@ -75,7 +83,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
 
   void _startPositionTimer() {
     _positionTimer?.cancel();
-    _positionTimer = Timer.periodic(const Duration(milliseconds: 200), (timer) async {
+    _positionTimer = Timer.periodic(const Duration(milliseconds: 200), (
+      timer,
+    ) async {
       if (mounted) {
         final position = await _controller.currentTime;
         setState(() {
@@ -129,12 +139,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       if (newPosition > _videoDuration) {
         newPosition = _videoDuration;
       }
-      
-      await _controller.seekTo(
-        seconds: newPosition,
-        allowSeekAhead: true,
-      );
-      
+
+      await _controller.seekTo(seconds: newPosition, allowSeekAhead: true);
+
       setState(() {
         _currentVideoPosition = newPosition;
       });
@@ -151,12 +158,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       if (newPosition < 0) {
         newPosition = 0;
       }
-      
-      await _controller.seekTo(
-        seconds: newPosition,
-        allowSeekAhead: true,
-      );
-      
+
+      await _controller.seekTo(seconds: newPosition, allowSeekAhead: true);
+
       setState(() {
         _currentVideoPosition = newPosition;
       });
@@ -180,7 +184,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Video Player'),
+        // title: const Text('Video Player'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -189,129 +193,334 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
           },
         ),
       ),
-      body: SingleChildScrollView(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: videoWidth,
-                  height: videoHeight,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Colors.black26,
-                        offset: Offset(0, 4),
-                        blurRadius: 10,
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: SingleChildScrollView(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: videoWidth,
+                    height: videoHeight,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black26,
+                          offset: Offset(0, 4),
+                          blurRadius: 10,
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: YoutubePlayer(
+                        controller: _controller,
+                        aspectRatio: 16 / 9,
                       ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(_formatDuration(_currentVideoPosition)),
+                      Expanded(
+                        child: Slider(
+                          value: _currentVideoPosition.clamp(0.0, _videoDuration),
+                          min: 0.0,
+                          max: _videoDuration,
+                          onChanged: (value) async {
+                            setState(() {
+                              _currentVideoPosition = value;
+                            });
+                            await _controller.seekTo(
+                              seconds: value,
+                              allowSeekAhead: true,
+                            );
+                          },
+                        ),
+                      ),
+                      Text(_formatDuration(_videoDuration)),
                     ],
                   ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: YoutubePlayer(
-                      controller: _controller,
-                      aspectRatio: 16 / 9,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(_formatDuration(_currentVideoPosition)),
-                    Expanded(
-                      child: Slider(
-                        value: _currentVideoPosition.clamp(0.0, _videoDuration),
-                        min: 0.0,
-                        max: _videoDuration,
-                        onChanged: (value) async {
-                          setState(() {
-                            _currentVideoPosition = value;
-                          });
-                          await _controller.seekTo(
-                            seconds: value,
-                            allowSeekAhead: true,
-                          );
-                        },
-                      ),
-                    ),
-                    Text(_formatDuration(_videoDuration)),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Skip backward button
-                    IconButton(
-                      icon: const Icon(Icons.replay_10),
-                      onPressed: _skipBackward,
-                      iconSize: 36,
-                      tooltip: 'Skip back $_skipDuration seconds',
-                    ),
-                    const SizedBox(width: 10),
-                    
-                    // Play/Pause button
-                    IconButton(
-                      icon: Icon(_isVideoPlaying ? Icons.pause : Icons.play_arrow),
-                      onPressed: _toggleVideoPlayback,
-                      iconSize: 48,
-                    ),
-                    
-                    const SizedBox(width: 10),
-                    // Skip forward button
-                    IconButton(
-                      icon: const Icon(Icons.forward_10),
-                      onPressed: _skipForward,
-                      iconSize: 36,
-                      tooltip: 'Skip forward $_skipDuration seconds',
-                    ),
-                    
-                    const SizedBox(width: 20),
-                    
-                    // Quality selector
-                    PopupMenuButton<String>(
-                      initialValue: _currentQuality,
-                      onSelected: _changeQuality,
-                      itemBuilder: (context) => _qualities.map((quality) {
-                        return PopupMenuItem<String>(
-                          value: quality,
-                          child: Row(
-                            children: [
-                              Text(quality),
-                              if (quality == _currentQuality)
-                                const Icon(Icons.check, size: 20),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.blue,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
+                  // Controls - Responsive layout
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final isNarrow = constraints.maxWidth < 300;
+        
+                      if (isNarrow) {
+                        // Stacked layout for narrow screens
+                        return Column(
                           children: [
-                            const Icon(Icons.settings, color: Colors.white),
+                            // Main playback controls
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.replay_10),
+                                  tooltip: 'Skip back $_skipDuration seconds',
+                                  iconSize: 28,
+                                  onPressed: () => _skipBackward(),
+                                ),
+                                const SizedBox(width: 4),
+                                IconButton(
+                                  icon: Icon(
+                                    _isVideoPlaying
+                                        ? Icons.pause
+                                        : Icons.play_arrow,
+                                  ),
+                                  iconSize: 36,
+                                  onPressed: _toggleVideoPlayback,
+                                ),
+                                const SizedBox(width: 4),
+                                IconButton(
+                                  icon: const Icon(Icons.forward_10),
+                                  tooltip: 'Skip forward $_skipDuration seconds',
+                                  iconSize: 28,
+                                  onPressed: () => _skipForward(),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            // Quality selector on separate row
+                            PopupMenuButton<String>(
+                              initialValue: _currentQuality,
+                              onSelected: _changeQuality,
+                              offset: const Offset(0, -10),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              itemBuilder: (context) => _qualities.map((quality) {
+                                final isSelected = quality == _currentQuality;
+                                return PopupMenuItem<String>(
+                                  value: quality,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 4,
+                                      horizontal: 8,
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          quality.toUpperCase(),
+                                          style: TextStyle(
+                                            fontWeight: isSelected
+                                                ? FontWeight.w600
+                                                : FontWeight.w400,
+                                            color: isSelected
+                                                ? Colors.blue
+                                                : null,
+                                          ),
+                                        ),
+                                        if (isSelected)
+                                          const Icon(
+                                            Icons.check_circle,
+                                            size: 18,
+                                            color: Colors.blue,
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color:
+                                      Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.grey[800]
+                                      : Colors.grey[200],
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: Colors.grey.withOpacity(0.3),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.hd,
+                                      color:
+                                          Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? Colors.white70
+                                          : Colors.grey[700],
+                                      size: 16,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      _currentQuality.toUpperCase(),
+                                      style: TextStyle(
+                                        color:
+                                            Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? Colors.white70
+                                            : Colors.grey[700],
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 2),
+                                    Icon(
+                                      Icons.keyboard_arrow_down,
+                                      color:
+                                          Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? Colors.white70
+                                          : Colors.grey[700],
+                                      size: 14,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 20,)
+                          ],
+                        );
+                      } else {
+                        // Single row layout for wider screens
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.replay_10),
+                              tooltip: 'Skip back $_skipDuration seconds',
+                              iconSize: 32,
+                              onPressed: () => _skipBackward(),
+                            ),
                             const SizedBox(width: 8),
-                            Text(
-                              _currentQuality,
-                              style: const TextStyle(color: Colors.white),
+                            IconButton(
+                              icon: Icon(
+                                _isVideoPlaying ? Icons.pause : Icons.play_arrow,
+                              ),
+                              iconSize: 40,
+                              onPressed: _toggleVideoPlayback,
+                            ),
+                            const SizedBox(width: 8),
+                            IconButton(
+                              icon: const Icon(Icons.forward_10),
+                              tooltip: 'Skip forward $_skipDuration seconds',
+                              iconSize: 32,
+                              onPressed: () => _skipForward(),
+                            ),
+                            const SizedBox(width: 16),
+                            // Quality selector
+                            PopupMenuButton<String>(
+                              initialValue: _currentQuality,
+                              onSelected: _changeQuality,
+                              offset: const Offset(0, -10),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              itemBuilder: (context) => _qualities.map((quality) {
+                                final isSelected = quality == _currentQuality;
+                                return PopupMenuItem<String>(
+                                  value: quality,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 4,
+                                      horizontal: 8,
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          quality.toUpperCase(),
+                                          style: TextStyle(
+                                            fontWeight: isSelected
+                                                ? FontWeight.w600
+                                                : FontWeight.w400,
+                                            color: isSelected
+                                                ? Colors.blue
+                                                : null,
+                                          ),
+                                        ),
+                                        if (isSelected)
+                                          const Icon(
+                                            Icons.check_circle,
+                                            size: 18,
+                                            color: Colors.blue,
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color:
+                                      Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.grey[800]
+                                      : Colors.grey[200],
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: Colors.grey.withOpacity(0.3),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.hd,
+                                      color:
+                                          Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? Colors.white70
+                                          : Colors.grey[700],
+                                      size: 18,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      _currentQuality.toUpperCase(),
+                                      style: TextStyle(
+                                        color:
+                                            Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? Colors.white70
+                                            : Colors.grey[700],
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Icon(
+                                      Icons.keyboard_arrow_down,
+                                      color:
+                                          Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? Colors.white70
+                                          : Colors.grey[700],
+                                      size: 16,
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                        );
+                      }
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),
