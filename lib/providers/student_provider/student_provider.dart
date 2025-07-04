@@ -80,6 +80,17 @@ class StudentProvider with ChangeNotifier {
     notifyListeners();
     try {
       await TokenManager.clearToken();
+      await UserManager.clearUser();
+      _courses = [];
+      _modules = [];
+      _lessons = [];
+      _assignments = [];
+      _attendance = [];
+      _live = null;
+      _alreadyMarked = null;
+      _selectedAssignment = null;
+      _isLoading = false;
+      _profileLoading = false;
       _student = UserModel();
       _isLoading = false;
       notifyListeners();

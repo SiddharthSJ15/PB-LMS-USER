@@ -41,6 +41,16 @@ class NavigationProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void resetNavigation() {
+    _selectedIndex = 0;
+    _selectedCourseId = null;
+    _selectedModuleId = null;
+    _selectedAssignmentId = null;
+    _selectedLessonId = null;
+    _videoUrl = null;
+    notifyListeners();
+  }
+
   void navigateToModules(int courseId) {
     _selectedCourseId = courseId;
     notifyListeners();

@@ -94,7 +94,7 @@ class BreadCrumb extends StatelessWidget {
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: navProvider.isViewingAssignments
-                      ? Color.fromARGB(255, 12, 201, 70)
+                      ? const Color.fromARGB(255, 12, 201, 70)
                       : Colors.black,
                   ),
                 ),
